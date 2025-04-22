@@ -346,10 +346,10 @@ def list_todos(
         return
     
     # Create rich table for output
-    table = Table(show_header=True)
-    table.add_column("ID")
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("ID", style="bold")
     table.add_column("Message")
-    table.add_column("Priority")
+    table.add_column("Priority", style="bold")
     table.add_column("Category")
     table.add_column("Due Date")
     table.add_column("Status")
@@ -382,11 +382,11 @@ def list_todos(
         due_text = Text(due_date_str, style=due_style) if due_style else due_date_str
         
         table.add_row(
-            str(id_text),
+            id_text,
             message,
-            str(priority_text),
+            priority_text,
             category_name,
-            str(due_text),
+            due_text,
             status
         )
     
@@ -611,12 +611,12 @@ def search(keyword: str):
         due_date_str = format_due_date(due_date)
         
         table.add_row(
-            str(todo_id),
+            Text(str(todo_id), style=priority_color),
             message,
-            str(priority_text),
-            category_name,
-            due_date_str,
-            status
+            priority_text,
+            Text(category_name, style=priority_color),
+            Text(due_date_str, style=priority_color),
+            Text(status, style=priority_color)
         )
     
     console.print(table)
