@@ -73,6 +73,7 @@ This creates the necessary database file at `~/.todos/todos.db`.
 | `t l --undone` | Show incomplete | `t l --undone` |
 | `t l -d` | Sort by due date | `t l -d` |
 | `t l --overdue` | Show overdue | `t l --overdue` |
+| `t l -t` | Display in table format | `t l -t` |
 | `t search <keyword>` | Search todos | `t search "meeting"` |
 
 ### Task Status

@@ -298,6 +298,7 @@ def list_todos(
     undone: bool = typer.Option(False, "--undone", help="Show only incomplete todos"),
     due: bool = typer.Option(False, "-d", "--due", help="Sort by due date"),
     overdue: bool = typer.Option(False, "--overdue", help="Show only overdue todos"),
+    table: bool = typer.Option(False, "-t", "--table", help="Display in table format"),
 ):
     """List todos with optional filtering."""
     conn = get_db_connection()
@@ -345,52 +346,73 @@ def list_todos(
         typer.echo("No todos found matching criteria")
         return
     
-    # Create rich table for output
-    table = Table(show_header=True, header_style="bold")
-    table.add_column("ID", style="bold")
-    table.add_column("Message")
-    table.add_column("Priority", style="bold")
-    table.add_column("Category")
-    table.add_column("Due Date")
-    table.add_column("Status")
-    
-    for todo in todos:
-        todo_id, message, priority, category_name, completed, due_date = todo
+    if table:
+        # Create rich table for output
+        table = Table(show_header=True, header_style="bold")
+        table.add_column("ID", style="bold")
+        table.add_column("Message")
+        table.add_column("Priority", style="bold")
+        table.add_column("Category")
+        table.add_column("Due Date")
+        table.add_column("Status")
         
-        if category_name is None:
-            category_name = "General"
+        for todo in todos:
+            todo_id, message, priority, category_name, completed, due_date = todo
+            
+            if category_name is None:
+                category_name = "General"
+            
+            priority_name, priority_color = PRIORITIES[priority]
+            priority_text = Text(priority_name, style=priority_color)
+            id_text = Text(str(todo_id), style=priority_color)
+            
+            status = "✓" if completed else " "
+            
+            due_date_str = format_due_date(due_date)
+            
+            # Check if overdue
+            due_style = ""
+            if due_date and not completed:
+                try:
+                    due_date_obj = datetime.datetime.fromisoformat(due_date).date()
+                    today = datetime.datetime.now().date()
+                    if due_date_obj < today:
+                        due_style = "red bold"
+                except (ValueError, TypeError):
+                    pass
+            
+            due_text = Text(due_date_str, style=due_style) if due_style else due_date_str
+            
+            table.add_row(
+                id_text,
+                message,
+                priority_text,
+                category_name,
+                due_text,
+                status
+            )
         
-        priority_name, priority_color = PRIORITIES[priority]
-        priority_text = Text(priority_name, style=priority_color)
-        id_text = Text(str(todo_id), style=priority_color)
-        
-        status = "✓" if completed else " "
-        
-        due_date_str = format_due_date(due_date)
-        
-        # Check if overdue
-        due_style = ""
-        if due_date and not completed:
-            try:
-                due_date_obj = datetime.datetime.fromisoformat(due_date).date()
-                today = datetime.datetime.now().date()
-                if due_date_obj < today:
-                    due_style = "red bold"
-            except (ValueError, TypeError):
-                pass
-        
-        due_text = Text(due_date_str, style=due_style) if due_style else due_date_str
-        
-        table.add_row(
-            id_text,
-            message,
-            priority_text,
-            category_name,
-            due_text,
-            status
-        )
-    
-    console.print(table)
+        console.print(table)
+    else:
+        # Default non-table format
+        for todo in todos:
+            todo_id, message, priority, category_name, completed, due_date = todo
+            
+            if category_name is None:
+                category_name = "General"
+            
+            _, priority_color = PRIORITIES[priority]
+            
+            status = "✓" if completed else " "
+            due_date_str = format_due_date(due_date)
+            
+            # Format the line with priority color
+            line = f"#{todo_id} {category_name} {message}"
+            if due_date_str:
+                line += f" {due_date_str}"
+            line += f" {status}"
+            
+            console.print(Text(line, style=priority_color))
 
 @app.command("lc")
 def list_categories():
