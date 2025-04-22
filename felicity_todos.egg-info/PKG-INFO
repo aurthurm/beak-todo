@@ -1,0 +1,28 @@
+Metadata-Version: 2.2
+Name: felicity-todos
+Version: 0.1.0
+Summary: A simple CLI for managing todos
+Home-page: https://github.com/example/felicity-todos
+Author: Felicity Todos Team
+Author-email: example@example.com
+Keywords: todo,cli,productivity
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Dist: typer>=0.7.0
+Requires-Dist: colorama>=0.4.4
+Requires-Dist: tabulate>=0.8.9
+Requires-Dist: rich>=13.0.0
+Requires-Dist: python-dateutil>=2.8.2
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: requires-dist
+Dynamic: summary

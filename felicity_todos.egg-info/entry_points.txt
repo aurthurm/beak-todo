@@ -1,0 +1,2 @@
+[console_scripts]
+t = src.main:app
