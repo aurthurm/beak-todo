@@ -1,9 +1,0 @@
-setup.py
-felicity_todos.egg-info/PKG-INFO
-felicity_todos.egg-info/SOURCES.txt
-felicity_todos.egg-info/dependency_links.txt
-felicity_todos.egg-info/entry_points.txt
-felicity_todos.egg-info/requires.txt
-felicity_todos.egg-info/top_level.txt
-src/__init__.py
-src/main.py
