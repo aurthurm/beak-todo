@@ -407,10 +407,21 @@ def list_todos(
             due_date_str = format_due_date(due_date)
             
             # Format the line with priority color
-            line = f"#{todo_id} {category_name} {message}"
+            line = f"#{todo_id}"
+            
+            # Add category in parentheses if it exists
+            line += f" ({category_name})"
+            
+            # Add message
+            line += f" {message}"
+            
+            # Add due date in square brackets only if it exists
             if due_date_str:
-                line += f" {due_date_str}"
-            line += f" {status}"
+                line += f" [{due_date_str}]"
+            
+            # Add status in parentheses only if it exists
+            if status == "✓":
+                line += " (✓)"
             
             console.print(Text(line, style=priority_color))
 
