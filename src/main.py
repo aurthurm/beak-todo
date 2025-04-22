@@ -126,6 +126,32 @@ def format_due_date(due_date):
     except (ValueError, TypeError):
         return due_date
 
+def validate_due_date(due_date_str: str, is_completed: bool = False) -> str:
+    """Validate due date and return ISO format string.
+    
+    Args:
+        due_date_str: The due date string to validate
+        is_completed: Whether the task is completed (allows past dates)
+    
+    Returns:
+        ISO format date string
+    
+    Raises:
+        ValueError: If date is invalid or in the past (for incomplete tasks)
+    """
+    try:
+        due_date = date_parse(due_date_str).date()
+        today = datetime.datetime.now().date()
+        
+        if not is_completed and due_date < today:
+            raise ValueError("Due date must be today or in the future for incomplete tasks")
+            
+        return due_date.isoformat()
+    except ValueError as e:
+        if "Due date must be" in str(e):
+            raise
+        raise ValueError("Invalid date format. Please use YYYY-MM-DD.")
+
 # Command implementations
 @app.command("a")
 def add(
@@ -139,13 +165,13 @@ def add(
         typer.echo("Priority must be between 0 and 3")
         raise typer.Exit(1)
     
-    # Parse due date if provided
+    # Parse and validate due date if provided
     due_date = None
     if due:
         try:
-            due_date = date_parse(due).isoformat()
-        except ValueError:
-            typer.echo("Invalid date format. Please use YYYY-MM-DD.")
+            due_date = validate_due_date(due)
+        except ValueError as e:
+            typer.echo(str(e))
             raise typer.Exit(1)
     
     # Get or create category
@@ -194,14 +220,16 @@ def edit(
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Check if todo exists
-    cursor.execute('SELECT * FROM todos WHERE id = ?', (id,))
-    todo = cursor.fetchone()
+    # Check if todo exists and get its completion status
+    cursor.execute('SELECT completed FROM todos WHERE id = ?', (id,))
+    result = cursor.fetchone()
     
-    if not todo:
+    if not result:
         typer.echo(f"Todo #{id} not found")
         conn.close()
         raise typer.Exit(1)
+    
+    is_completed = bool(result[0])
     
     # Build update query dynamically
     updates = []
@@ -229,11 +257,11 @@ def edit(
             updates.append("due_date = NULL")
         else:
             try:
-                due_date = date_parse(due).isoformat()
+                due_date = validate_due_date(due, is_completed)
                 updates.append("due_date = ?")
                 values.append(due_date)
-            except ValueError:
-                typer.echo("Invalid date format. Please use YYYY-MM-DD.")
+            except ValueError as e:
+                typer.echo(str(e))
                 conn.close()
                 raise typer.Exit(1)
     
