@@ -34,6 +34,13 @@ A powerful, feature-rich command-line todo application with a beautiful interfac
   - SQLite database backend
   - Automatic backup support
 
+- 🤖 **AI Features** (optional)
+  - Natural language task creation (`t ai add`)
+  - Daily planning assistant (`t ai plan`)
+  - Summaries, risk detection, smart search
+  - Task breakdown and read-only chat
+  - Dual-mode providers: direct API (LiteLLM) or harness CLI (Codex/Claude, opt-in)
+
 ## Installation
 
 ```bash
@@ -42,7 +49,7 @@ pip install felicity-todos
 
 ## Quick Start
 
-1. Initialize the database:
+1. Initialize the database (creates `~/.todos/` and default config):
 ```bash
 t init
 ```
@@ -141,6 +148,87 @@ This displays tasks in a table with columns for ID, Message, Priority, Category,
 | `t stats` | Show statistics | `t stats` |
 | `t export <filename>` | Export todos to CSV | `t export ~/todos.csv` |
 | `t import <filename>` | Import todos from CSV | `t import ~/todos.csv` |
+
+### AI Commands
+
+Requires an API key (recommended) or explicit harness configuration.
+
+```bash
+# Setup and diagnostics
+t ai setup
+t ai doctor
+
+# Natural language add
+t ai add "Submit MoHCC proposal by Friday urgent"
+
+# Planning and insights
+t ai plan today
+t ai summary
+t ai risks
+t ai search "proposals due soon"
+t ai breakdown "Prepare Facility Registry proposal"
+t ai chat
+
+# Provider management
+t ai provider list
+t ai provider set openai   # or anthropic, auto, codex, claude, none
+```
+
+Use `--dry-run` on `t ai add` and `t ai breakdown` to preview without saving.
+
+### Configuration (`~/.todos/config.toml`)
+
+OS-agnostic paths via `Path.home() / ".todos"`.
+
+```bash
+t config show
+t config path
+t config get ai.provider
+t config set ai.provider anthropic
+t config set ai.model "anthropic/claude-3-5-haiku-latest"
+t config edit
+```
+
+**Direct API mode (default):** set one of:
+
+```bash
+export OPENAI_API_KEY="..."
+export ANTHROPIC_API_KEY="..."
+export GOOGLE_API_KEY="..."
+export OLLAMA_API_BASE="http://localhost:11434"   # local models
+```
+
+Provider resolution order when `ai.provider = auto`:
+
+1. Configured provider (if not `auto`)
+2. `OPENAI_API_KEY` → LiteLLM
+3. `ANTHROPIC_API_KEY` → LiteLLM
+4. `GOOGLE_API_KEY` / `GEMINI_API_KEY` → LiteLLM
+5. `OLLAMA_API_BASE` → LiteLLM
+6. Harness only if explicitly set (`t ai provider set codex`)
+
+**Harness mode (opt-in):** Codex or Claude CLI. Never auto-selected when API keys exist (avoids unexpected billing). Set explicitly:
+
+```bash
+t ai provider set codex
+t ai add --provider claude "Review LIMS tasks tomorrow"
+```
+
+Example `~/.todos/config.toml`:
+
+```toml
+[ai]
+enabled = true
+provider = "auto"
+model = "gpt-4o-mini"
+temperature = 0.2
+show_provider_on_use = true
+
+[harness]
+codex_bin = "codex"
+claude_bin = "claude"
+timeout_seconds = 120
+```
 
 ## Priority Levels
 
