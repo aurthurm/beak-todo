@@ -11,6 +11,7 @@
 | [integrations.md](integrations.md) | External integrations overview |
 | [integrations/github.md](integrations/github.md) | GitHub sync setup and rules |
 | [integrations/email.md](integrations/email.md) | Resend weekly reports (draft-first) |
+| [channels/telegram.md](channels/telegram.md) | Telegram bot channel |
 
 ## Quick links
 

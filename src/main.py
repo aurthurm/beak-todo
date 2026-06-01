@@ -9,6 +9,7 @@ from rich.text import Text
 
 from src.ai import ai_app
 from src.config_cli import config_app
+from src.channels_cli import channels_app
 from src.email_cli import email_app
 from src.integrations_cli import integrations_app
 from src.report_cli import report_app
@@ -37,6 +38,7 @@ app.add_typer(integrations_app, name="integrations")
 app.add_typer(tag_app, name="tag")
 app.add_typer(report_app, name="report")
 app.add_typer(email_app, name="email")
+app.add_typer(channels_app, name="channels")
 console = Console()
 
 

@@ -6,6 +6,7 @@ Beak Todo can link local planning tasks to work in external systems and send **w
 |---------|----------|-----|
 | Input / sync | GitHub (issues & PRs) | [github.md](integrations/github.md) |
 | Output | Resend (email) | [email.md](integrations/email.md) |
+| Chat I/O | Telegram (bot) | [../channels/telegram.md](../channels/telegram.md) |
 
 ## Design
 
@@ -66,3 +67,15 @@ t email send-draft
 ```
 
 See [integrations/email.md](integrations/email.md).
+
+## Telegram
+
+Mobile chat interface: `/today`, `/add`, `/dump`, `/report weekly`, etc.
+
+```bash
+export TELEGRAM_BOT_TOKEN="..."
+t channels telegram setup
+t channels telegram run
+```
+
+See [channels/telegram.md](../channels/telegram.md).

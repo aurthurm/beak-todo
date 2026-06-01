@@ -6,7 +6,7 @@ import os
 import sys
 import tempfile
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
@@ -51,6 +51,13 @@ DEFAULT_CONFIG: dict[str, Any] = {
             "include_next_week_plan": True,
         },
     },
+    "telegram": {
+        "enabled": False,
+        "poll_timeout_seconds": 30,
+        "allowed_user_ids": [],
+        "confirm_email_send": True,
+        "confirm_github_sync": False,
+    },
 }
 
 ALLOWED_PROVIDERS = frozenset(
@@ -90,6 +97,15 @@ class EmailConfig:
     from_address: str = "Your Name <updates@yourdomain.com>"
     default_to: str = ""
     send_mode: str = "draft_first"
+
+
+@dataclass
+class TelegramConfig:
+    enabled: bool = False
+    poll_timeout_seconds: int = 30
+    allowed_user_ids: list[int] = field(default_factory=list)
+    confirm_email_send: bool = True
+    confirm_github_sync: bool = False
 
 
 @dataclass
@@ -181,6 +197,22 @@ def get_email_config() -> EmailConfig:
         from_address=str(cfg.get("from", "Your Name <updates@yourdomain.com>")),
         default_to=str(cfg.get("default_to", "")),
         send_mode=str(cfg.get("send_mode", "draft_first")),
+    )
+
+
+def get_telegram_config() -> TelegramConfig:
+    cfg = load_config().get("telegram", {})
+    raw_ids = cfg.get("allowed_user_ids", [])
+    if isinstance(raw_ids, list):
+        ids = [int(x) for x in raw_ids]
+    else:
+        ids = []
+    return TelegramConfig(
+        enabled=bool(cfg.get("enabled", False)),
+        poll_timeout_seconds=int(cfg.get("poll_timeout_seconds", 30)),
+        allowed_user_ids=ids,
+        confirm_email_send=bool(cfg.get("confirm_email_send", True)),
+        confirm_github_sync=bool(cfg.get("confirm_github_sync", False)),
     )
 
 

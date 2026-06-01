@@ -18,11 +18,11 @@ Felicity Todos is a **terminal-first todo engine** with an optional **Beak Flow*
               │   ai_service           │
               └───────────┬────────────┘
                           │
-        ┌─────────────────┼─────────────────┐
-        ▼                 ▼                 ▼
-   src/main.py      src/api/app.py    (tests)
-   Typer CLI        FastAPI REST
-   command `t`      command `beak-flow`
+        ┌─────────────────┼─────────────────┬─────────────────┐
+        ▼                 ▼                 ▼                 ▼
+   src/main.py      src/api/app.py   src/channels/    (tests)
+   Typer CLI        FastAPI REST     telegram bot
+   command `t`      beak-flow        t channels telegram run
                           │
                           ▼
                      ui/ (Vue 3)
@@ -47,7 +47,10 @@ beak-todo/
 │   │   ├── external.py
 │   │   ├── tags.py
 │   │   └── ai_service.py    # Brain dump, plan, actions preview
-│   ├── integrations/          # github/ (+ future providers)
+│   ├── channels/            # Telegram (chat I/O → dispatcher → services)
+│   │   ├── dispatcher.py
+│   │   └── telegram/
+│   ├── integrations/          # github/, email/ (external systems)
 │   ├── api/
 │   │   ├── app.py           # FastAPI app + static UI mount
 │   │   ├── static/          # Built UI (beak-flow build-ui)
@@ -72,7 +75,17 @@ external_sources     provider + organisation + repository
 external_items       issue/pr per source (title, state, url)
 todo_external_links  todo_id → external_item_id (0..1 per todo)
 tags / todo_tags     many-to-many context labels
+reports / email_sends  weekly report drafts and sends
+channel_accounts / channel_messages / pending_actions  Telegram (and future chat)
 ```
+
+### Channels vs integrations
+
+| Layer | Role | Examples |
+|-------|------|----------|
+| **channels/** | Parse user messages, confirm actions, format replies | Telegram bot |
+| **integrations/** | Sync or send via external APIs | GitHub, Resend |
+| **services/** | Business logic and SQLite | todos, ai_service, reports |
 
 Planning stays on `todos` (due_date, priority, sort_order, completed). Org/repo are **not** tags.
 

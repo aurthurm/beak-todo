@@ -2,7 +2,7 @@
 
 A powerful command-line todo application with optional **Beak Flow** — a local Vue planning gateway for brain dump, calendar drag-and-drop, and AI-assisted organisation.
 
-Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/beak-flow.md) · [GitHub sync](docs/integrations/github.md) · [Email reports](docs/integrations/email.md) · [API](docs/api.md) · [Architecture](docs/architecture.md)
+Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/beak-flow.md) · [GitHub sync](docs/integrations/github.md) · [Email reports](docs/integrations/email.md) · [Telegram](docs/channels/telegram.md) · [API](docs/api.md) · [Architecture](docs/architecture.md)
 
 ![Demo](demo.gif)
 
@@ -64,6 +64,12 @@ Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/bea
   - Beak Flow **Reports** tab for preview and send
   - Requires `RESEND_API_KEY` — see [docs/integrations/email.md](docs/integrations/email.md)
 
+- 💬 **Telegram channel** (optional)
+  - Mobile bot: `/today`, `/add`, `/dump`, `/plan`, `/report weekly`, `/github`
+  - Allowlist security; confirm before email send and brain-dump batch
+  - `t channels telegram run` — separate process, same SQLite DB
+  - See [docs/channels/telegram.md](docs/channels/telegram.md)
+
 ## Installation
 
 ```bash
@@ -113,6 +119,17 @@ t email send-draft
 ```
 
 See [docs/integrations/email.md](docs/integrations/email.md).
+
+### Telegram bot
+
+```bash
+export TELEGRAM_BOT_TOKEN="..."
+t channels telegram setup
+t channels telegram run
+# DM your bot → /start → add user id to [telegram].allowed_user_ids
+```
+
+See [docs/channels/telegram.md](docs/channels/telegram.md).
 
 ## Quick Start
 

@@ -188,6 +188,17 @@ See [integrations/github.md](integrations/github.md).
 
 Requires `RESEND_API_KEY`. See [integrations/email.md](integrations/email.md).
 
+## Channels (Telegram)
+
+| Command | Description |
+|---------|-------------|
+| `t channels telegram setup` | Enable `[telegram]` in config + setup steps |
+| `t channels telegram doctor` | Verify token, allowlist, `getMe` |
+| `t channels telegram run` | Long-polling bot (blocking) |
+| `t channels telegram run --once` | Single poll batch (debug) |
+
+Requires `TELEGRAM_BOT_TOKEN`. See [channels/telegram.md](channels/telegram.md).
+
 ## Tags
 
 | Command | Description |
