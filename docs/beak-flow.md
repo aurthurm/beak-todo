@@ -27,36 +27,53 @@ See [architecture.md](architecture.md) for schema and module layout. See [api.md
 ### Prerequisites
 
 - Python 3.10+
-- Node.js 18+ (for UI development/build only)
+- Node.js 18+ (only for `beak-flow build-ui` or Vite dev mode)
 
-### Development (two terminals)
+### Production (single port — recommended)
 
 ```bash
-# From repo root
 pip install -e .
-
-# Terminal 1 — API
+beak-flow build-ui
 beak-flow
-# equivalent: uvicorn src.api.app:app --reload --port 8787
-
-# Terminal 2 — UI with hot reload
-cd ui && npm install && npm run dev
 ```
 
-- UI: http://localhost:5173  
-- API: http://127.0.0.1:8787  
-- OpenAPI: http://127.0.0.1:8787/docs  
+Open http://127.0.0.1:8787 — API and UI on one process. Static files live in `src/api/static/` inside the Python package (included in wheels when pre-built).
+
+| URL | Purpose |
+|-----|---------|
+| http://127.0.0.1:8787/ | Beak Flow UI |
+| http://127.0.0.1:8787/docs | OpenAPI |
+
+### Background service (start at login)
+
+```bash
+beak-flow build-ui              # required once before first use
+beak-flow install-service       # writes OS service + starts now
+beak-flow service-status
+```
+
+| OS | Mechanism | Unit location |
+|----|-----------|---------------|
+| Linux | systemd user service | `~/.config/systemd/user/beak-flow.service` |
+| macOS | launchd | `~/Library/LaunchAgents/com.beak.flow.plist` |
+| Windows | Task Scheduler | Task name `BeakFlow` |
+
+Server settings persist in `~/.todos/beak-flow.toml` (host, port, log path). Override with `BEAK_FLOW_HOST`, `BEAK_FLOW_PORT`, or `BEAK_FLOW_LOG`.
+
+**Linux:** run `loginctl enable-linger $USER` if you want Beak Flow to keep running after you log out.
+
+```bash
+beak-flow uninstall-service
+```
+
+### UI development (hot reload)
+
+```bash
+beak-flow                        # Terminal 1 — API
+cd ui && npm install && npm run dev   # Terminal 2 — UI :5173
+```
 
 Vite proxies `/api` → `8787`.
-
-### Production-style (single port)
-
-```bash
-cd ui && npm run build
-beak-flow
-```
-
-When `ui/dist` exists, FastAPI serves the built UI from the same port as the API.
 
 ### AI setup
 
@@ -68,6 +85,10 @@ t ai doctor          # verify resolution
 ```
 
 Or configure in `~/.todos/config.toml` (see [commands.md](commands.md)).
+
+### GitHub work in the UI
+
+Use the **Sources** sidebar to filter local vs GitHub tasks by organisation and repository, and filter by **tags**. Click **Sync GitHub** after configuring [integrations/github.md](integrations/github.md).
 
 ## UI layout
 
@@ -142,22 +163,20 @@ Tab bar: **Inbox | Calendar | Today | AI** — one panel at a time. Same API.
 
 ## UI project structure
 
+Source lives under [`ui/`](../ui/). See **[ui/README.md](../ui/README.md)** for npm scripts, dev vs production build, and file layout.
+
 ```text
-ui/
-├── src/
-│   ├── App.vue
-│   ├── api/client.ts
-│   ├── stores/planner.ts
-│   └── components/
-│       ├── BrainDumpPanel.vue
-│       ├── CalendarStrip.vue
-│       ├── DayView.vue
-│       ├── TaskCard.vue
-│       ├── TaskDetailModal.vue
-│       └── AiDrawer.vue
-├── vite.config.ts
-└── package.json
+ui/src/          → Vue components, Pinia store, api/client.ts
+ui/vite.config.ts → dev proxy /api → 8787; build → ../src/api/static/
+src/api/static/  → production assets served by beak-flow (gitignored except .gitkeep)
 ```
+
+Build commands:
+
+| From | Command |
+|------|---------|
+| Repo root | `beak-flow build-ui` |
+| `ui/` | `npm run build` (same output path) |
 
 ## Troubleshooting
 
@@ -167,6 +186,8 @@ ui/
 | AI Organise fails | `t ai doctor`, API keys, `ai.enabled` in config |
 | Empty calendar | Tasks need `due_date` set; inbox items have no date |
 | CORS errors | Use Vite dev server (proxy) or built UI via `beak-flow` |
+| Blank page at `/` | Run `beak-flow build-ui` |
+| UI missing after pip install | Build UI once, or use a wheel that includes `src/api/static/` |
 
 ## Related docs
 

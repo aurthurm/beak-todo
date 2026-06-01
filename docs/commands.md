@@ -132,15 +132,44 @@ Harness is **never** auto-selected when API keys exist.
 
 | Command | Description |
 |---------|-------------|
-| `beak-flow` | Start API server (port 8787) |
+| `beak-flow` | Run server in foreground (default) |
+| `beak-flow run` | Same as above |
+| `beak-flow run --host HOST --port PORT` | Bind address (also env `BEAK_FLOW_HOST` / `BEAK_FLOW_PORT`) |
+| `beak-flow build-ui` | Build Vue UI into `src/api/static/` |
+| `beak-flow install-service` | Install OS background service |
+| `beak-flow uninstall-service` | Remove OS service |
+| `beak-flow service-status` | Show service + config summary |
 
-UI development:
+Config file: `~/.todos/beak-flow.toml` (written on `install-service`).
+
+UI hot reload (development):
 
 ```bash
 cd ui && npm install && npm run dev
 ```
 
 See [beak-flow.md](beak-flow.md).
+
+## Integrations (GitHub)
+
+| Command | Description |
+|---------|-------------|
+| `t integrations github setup` | Create `~/.todos/integrations/github.toml` |
+| `t integrations github doctor` | Verify token and repos |
+| `t integrations github sync` | Sync issues/PRs (bidirectional state) |
+| `t integrations github repos list` | List configured repos |
+| `t integrations github repos add org/repo` | Add a repository |
+| `t integrations github link ID URL` | Link todo to issue/PR |
+| `t integrations github unlink ID` | Remove GitHub link |
+
+See [integrations/github.md](integrations/github.md).
+
+## Tags
+
+| Command | Description |
+|---------|-------------|
+| `t tag list` | List all tags |
+| `t tag add ID name [names...]` | Add tags to a todo |
 
 ## Priority levels
 

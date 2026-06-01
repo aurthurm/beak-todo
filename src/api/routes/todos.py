@@ -4,8 +4,19 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from src.api.schemas import NoteCreate, ReorderRequest, TodoCreate, TodoOut, TodoPatch
+from src.api.schemas import (
+    ExternalLinkRequest,
+    ExternalSourceOut,
+    NoteCreate,
+    ReorderRequest,
+    TagsUpdate,
+    TodoCreate,
+    TodoOut,
+    TodoPatch,
+)
+from src.integrations.registry import get_integration
 from src.services import notes as notes_svc
+from src.services import tags as tags_svc
 from src.services.todos import (
     ListFilters,
     TodoRecord,
@@ -25,6 +36,17 @@ router = APIRouter(prefix="/todos", tags=["todos"])
 
 
 def _out(r: TodoRecord) -> TodoOut:
+    external = None
+    if r.external:
+        external = ExternalSourceOut(
+            provider=r.external.provider,
+            organisation=r.external.organisation,
+            repository=r.external.repository,
+            item_type=r.external.item_type,
+            item_number=r.external.item_number,
+            state=r.external.state,
+            url=r.external.url,
+        )
     return TodoOut(
         id=r.id,
         message=r.message,
@@ -35,7 +57,43 @@ def _out(r: TodoRecord) -> TodoOut:
         completed=r.completed,
         due_date=r.due_date,
         sort_order=r.sort_order,
+        source_type=r.source_type,
+        external=external,
+        tags=r.tags,
+        display_source=r.display_source,
     )
+
+
+def _build_filters(
+    *,
+    category: Optional[str],
+    search: Optional[str],
+    overdue: bool,
+    completed: Optional[bool],
+    source: Optional[str],
+    organisation: Optional[str],
+    repository: Optional[str],
+    item_type: Optional[str],
+    external_state: Optional[str],
+    tag: Optional[list[str]],
+) -> ListFilters:
+    f = ListFilters(
+        category=category,
+        search=search,
+        overdue=overdue,
+        source=source,
+        organisation=organisation,
+        repository=repository,
+        item_type=item_type,
+        external_state=external_state,
+    )
+    if tag:
+        f.tags_all = [t.strip().lower() for t in tag if t.strip()]
+    if completed is True:
+        f.done = True
+    elif completed is False:
+        f.undone = True
+    return f
 
 
 @router.get("", response_model=list[TodoOut])
@@ -48,6 +106,12 @@ def list_todos(
     inbox: bool = False,
     search: Optional[str] = None,
     overdue: bool = False,
+    source: Optional[str] = Query(None, description="local or github"),
+    organisation: Optional[str] = None,
+    repository: Optional[str] = None,
+    item_type: Optional[str] = Query(None, description="issue or pr"),
+    external_state: Optional[str] = None,
+    tag: Optional[list[str]] = Query(None),
 ):
     if inbox:
         return [_out(r) for r in fetch_inbox()]
@@ -57,11 +121,18 @@ def list_todos(
         inc = completed is True
         return [_out(r) for r in fetch_by_date_range(due_from, due_to, include_completed=inc)]
 
-    f = ListFilters(category=category, search=search, overdue=overdue)
-    if completed is True:
-        f.done = True
-    elif completed is False:
-        f.undone = True
+    f = _build_filters(
+        category=category,
+        search=search,
+        overdue=overdue,
+        completed=completed,
+        source=source,
+        organisation=organisation,
+        repository=repository,
+        item_type=item_type,
+        external_state=external_state,
+        tag=tag,
+    )
     return [_out(r) for r in query_todos(f)]
 
 
@@ -106,6 +177,38 @@ def patch_todo(todo_id: int, body: TodoPatch):
     )
     if not ok:
         raise HTTPException(404, "Todo not found")
+    r = get_todo_by_id(todo_id)
+    return _out(r)
+
+
+@router.put("/{todo_id}/tags", response_model=TodoOut)
+def put_tags(todo_id: int, body: TagsUpdate):
+    if not get_todo_by_id(todo_id):
+        raise HTTPException(404, "Todo not found")
+    tags_svc.set_todo_tags(todo_id, body.tags)
+    r = get_todo_by_id(todo_id)
+    return _out(r)
+
+
+@router.post("/{todo_id}/external-link", response_model=TodoOut)
+def post_external_link(todo_id: int, body: ExternalLinkRequest):
+    try:
+        get_integration("github").link_todo(todo_id, body.url)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(400, str(e)) from e
+    r = get_todo_by_id(todo_id)
+    if not r:
+        raise HTTPException(404, "Todo not found")
+    return _out(r)
+
+
+@router.delete("/{todo_id}/external-link", response_model=TodoOut)
+def delete_external_link(todo_id: int):
+    if not get_todo_by_id(todo_id):
+        raise HTTPException(404, "Todo not found")
+    get_integration("github").unlink_todo(todo_id)
     r = get_todo_by_id(todo_id)
     return _out(r)
 

@@ -16,6 +16,16 @@ from src.ai.schemas import (
 )
 
 
+class ExternalSourceOut(BaseModel):
+    provider: str = "github"
+    organisation: str
+    repository: str
+    item_type: str
+    item_number: int
+    state: str
+    url: str
+
+
 class TodoOut(BaseModel):
     id: int
     message: str
@@ -26,6 +36,10 @@ class TodoOut(BaseModel):
     completed: bool
     due_date: Optional[str] = None
     sort_order: int = 0
+    source_type: str = "local"
+    external: Optional[ExternalSourceOut] = None
+    tags: list[str] = []
+    display_source: Optional[str] = None
 
 
 class TodoCreate(BaseModel):
@@ -111,3 +125,34 @@ class HealthResponse(BaseModel):
     status: str
     ai_enabled: bool
     config_path: str
+
+
+class TagOut(BaseModel):
+    id: int
+    name: str
+    todo_count: int
+
+
+class TagsUpdate(BaseModel):
+    tags: list[str]
+
+
+class ExternalLinkRequest(BaseModel):
+    url: str
+
+
+class GitHubSyncResponse(BaseModel):
+    created: int
+    updated: int
+    pushed: int
+    errors: list[str]
+
+
+class GitHubSourcesResponse(BaseModel):
+    organisations: dict[str, list[dict]]
+
+
+class GitHubStatusResponse(BaseModel):
+    configured_repos: int
+    sources_in_db: int
+    last_errors: list[str] = []

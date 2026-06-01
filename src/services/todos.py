@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import datetime
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from dateutil.parser import parse as date_parse
 
 from src.db.connection import get_db_connection
+from src.services import external as ext_svc
+from src.services import tags as tags_svc
 
 PRIORITIES = {
     0: ("Low", "blue"),
@@ -21,6 +23,17 @@ TodoRow = tuple[int, str, int, Optional[str], int, Optional[str], int]
 
 
 @dataclass
+class ExternalInfo:
+    provider: str
+    organisation: str
+    repository: str
+    item_type: str
+    item_number: int
+    state: str
+    url: str
+
+
+@dataclass
 class TodoRecord:
     id: int
     message: str
@@ -29,6 +42,10 @@ class TodoRecord:
     completed: bool
     due_date: Optional[str]
     sort_order: int = 0
+    source_type: str = "local"
+    external: Optional[ExternalInfo] = None
+    tags: list[str] = field(default_factory=list)
+    display_source: Optional[str] = None
 
     @property
     def priority_label(self) -> str:
@@ -40,7 +57,7 @@ class TodoRecord:
 
 
 def _row_to_record(row: tuple) -> TodoRecord:
-    todo_id, message, priority, category_name, completed, due_date, sort_order = row
+    todo_id, message, priority, category_name, completed, due_date, sort_order = row[:7]
     return TodoRecord(
         id=todo_id,
         message=message,
@@ -50,6 +67,41 @@ def _row_to_record(row: tuple) -> TodoRecord:
         due_date=due_date,
         sort_order=sort_order or 0,
     )
+
+
+def _enrich_records(records: list[TodoRecord]) -> list[TodoRecord]:
+    if not records:
+        return records
+    from src.integrations.github.display import format_display_source
+
+    ids = [r.id for r in records]
+    externals = ext_svc.get_external_for_todos(ids)
+    tag_map = tags_svc.get_tags_for_todos(ids)
+    for rec in records:
+        rec.tags = tag_map.get(rec.id, [])
+        item = externals.get(rec.id)
+        if item:
+            rec.source_type = item.provider
+            rec.external = ExternalInfo(
+                provider=item.provider,
+                organisation=item.organisation,
+                repository=item.repository,
+                item_type=item.item_type,
+                item_number=item.item_number,
+                state=item.state,
+                url=item.url,
+            )
+            rec.display_source = format_display_source(
+                item.organisation,
+                item.repository,
+                item.item_type,
+                item.item_number,
+            )
+        else:
+            rec.source_type = "local"
+            rec.external = None
+            rec.display_source = None
+    return records
 
 
 def get_category_id(category_name: str) -> int:
@@ -134,7 +186,9 @@ def get_todo_by_id(todo_id: int) -> Optional[TodoRecord]:
     )
     row = cursor.fetchone()
     conn.close()
-    return _row_to_record(row) if row else None
+    if not row:
+        return None
+    return _enrich_records([_row_to_record(row)])[0]
 
 
 def get_todo_completed(todo_id: int) -> Optional[bool]:
@@ -203,11 +257,19 @@ def update_todo(
 
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = f"UPDATE todos SET {', '.join(updates)} WHERE id = ?"
+    query = f"UPDATE todos SET {', '.join(updates)}, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
     values.append(todo_id)
     cursor.execute(query, values)
     conn.commit()
     conn.close()
+
+    if completed is not None or message is not None:
+        try:
+            from src.integrations.github.push import push_todo_if_linked
+
+            push_todo_if_linked(todo_id)
+        except Exception:
+            pass
     return True
 
 
@@ -234,9 +296,25 @@ class ListFilters:
     due_to: Optional[str] = None
     inbox: bool = False
     search: Optional[str] = None
+    source: Optional[str] = None
+    organisation: Optional[str] = None
+    repository: Optional[str] = None
+    item_type: Optional[str] = None
+    external_state: Optional[str] = None
+    tags_all: Optional[list[str]] = None
 
 
-def _base_select() -> str:
+def _base_select(*, with_external: bool = False) -> str:
+    if with_external:
+        return """
+    SELECT DISTINCT t.id, t.message, t.priority, c.name, t.completed, t.due_date, t.sort_order
+    FROM todos t
+    LEFT JOIN categories c ON t.category_id = c.id
+    LEFT JOIN todo_external_links tel ON t.id = tel.todo_id
+    LEFT JOIN external_items ei ON tel.external_item_id = ei.id
+    LEFT JOIN external_sources es ON ei.source_id = es.id
+    WHERE 1=1
+    """
     return """
     SELECT t.id, t.message, t.priority, c.name, t.completed, t.due_date, t.sort_order
     FROM todos t
@@ -249,8 +327,42 @@ def query_todos(filters: Optional[ListFilters] = None) -> list[TodoRecord]:
     filters = filters or ListFilters()
     conn = get_db_connection()
     cursor = conn.cursor()
-    query = _base_select()
+    needs_external = bool(
+        filters.source
+        or filters.organisation
+        or filters.repository
+        or filters.item_type
+        or filters.external_state
+    )
+    query = _base_select(with_external=needs_external or filters.source == "github")
     params: list[Any] = []
+
+    if filters.source == "local":
+        query += " AND tel.todo_id IS NULL"
+    elif filters.source == "github":
+        query += " AND es.provider = 'github'"
+    if filters.organisation:
+        query += " AND es.organisation = ?"
+        params.append(filters.organisation)
+    if filters.repository:
+        query += " AND es.repository = ?"
+        params.append(filters.repository)
+    if filters.item_type:
+        query += " AND ei.item_type = ?"
+        params.append(filters.item_type)
+    if filters.external_state:
+        query += " AND ei.state = ?"
+        params.append(filters.external_state)
+    if filters.tags_all:
+        for tag_name in filters.tags_all:
+            query += """
+            AND EXISTS (
+                SELECT 1 FROM todo_tags tt
+                JOIN tags tg ON tt.tag_id = tg.id
+                WHERE tt.todo_id = t.id AND tg.name = ? COLLATE NOCASE
+            )
+            """
+            params.append(tag_name.strip().lower())
 
     if filters.inbox:
         query += " AND t.due_date IS NULL AND t.completed = 0"
@@ -290,7 +402,7 @@ def query_todos(filters: Optional[ListFilters] = None) -> list[TodoRecord]:
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
-    return [_row_to_record(r) for r in rows]
+    return _enrich_records([_row_to_record(r) for r in rows])
 
 
 def fetch_todos(filters: Optional[ListFilters] = None) -> list[tuple]:

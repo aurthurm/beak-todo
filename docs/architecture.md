@@ -44,9 +44,17 @@ beak-todo/
 │   │   ├── todos.py         # CRUD, inbox, date range, sort_order
 │   │   ├── notes.py
 │   │   ├── categories.py
+│   │   ├── external.py
+│   │   ├── tags.py
 │   │   └── ai_service.py    # Brain dump, plan, actions preview
+│   ├── integrations/          # github/ (+ future providers)
 │   ├── api/
-│   │   ├── app.py           # FastAPI app + static ui/dist
+│   │   ├── app.py           # FastAPI app + static UI mount
+│   │   ├── static/          # Built UI (beak-flow build-ui)
+│   │   ├── static_paths.py  # resolve_static_dir()
+│   │   ├── server.py        # beak-flow CLI (run, build-ui, service)
+│   │   ├── server_config.py # ~/.todos/beak-flow.toml
+│   │   ├── service_install.py
 │   │   ├── schemas.py       # API DTOs
 │   │   └── routes/          # todos, categories, ai
 │   └── ai/                  # LiteLLM + harness providers
@@ -56,6 +64,17 @@ beak-todo/
 ```
 
 ## Database schema
+
+### Integrations (Option B)
+
+```text
+external_sources     provider + organisation + repository
+external_items       issue/pr per source (title, state, url)
+todo_external_links  todo_id → external_item_id (0..1 per todo)
+tags / todo_tags     many-to-many context labels
+```
+
+Planning stays on `todos` (due_date, priority, sort_order, completed). Org/repo are **not** tags.
 
 ### `categories`
 

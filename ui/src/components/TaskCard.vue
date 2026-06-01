@@ -14,7 +14,11 @@ defineEmits<{ click: [] }>();
     @click="$emit('click')"
   >
     <div class="title">{{ todo.message }}</div>
-    <div class="meta">{{ todo.category }} · {{ todo.priority_label }}</div>
+    <div v-if="todo.display_source" class="source">{{ todo.display_source }}</div>
+    <div class="meta">
+      {{ todo.category }} · {{ todo.priority_label }}
+      <span v-if="todo.tags?.length"> · {{ todo.tags.join(", ") }}</span>
+    </div>
   </div>
 </template>
 
@@ -35,6 +39,11 @@ defineEmits<{ click: [] }>();
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.3;
+}
+.source {
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
 }
 .meta {
   font-size: 0.7rem;

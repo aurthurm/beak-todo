@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { usePlannerStore } from "./stores/planner";
 import { api } from "./api/client";
+import SourceFilterPanel from "./components/SourceFilterPanel.vue";
 import BrainDumpPanel from "./components/BrainDumpPanel.vue";
 import CalendarStrip from "./components/CalendarStrip.vue";
 import DayView from "./components/DayView.vue";
@@ -75,6 +76,7 @@ onMounted(() => store.refresh());
         class="col-left desktop-only"
         :class="{ 'mobile-show': store.mobileTab === 'inbox' }"
       >
+        <SourceFilterPanel />
         <BrainDumpPanel />
       </div>
       <div

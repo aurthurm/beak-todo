@@ -42,6 +42,15 @@ Felicity Todos is a local-first task manager with a terminal CLI, optional AI, a
 - Task detail modal with notes
 - Mobile tab layout
 - Shares `~/.todos/todos.db` with CLI
+- Single-port deploy: `beak-flow build-ui` + `beak-flow` (UI in `src/api/static/`)
+- Background service: `beak-flow install-service` (systemd / launchd / Task Scheduler)
+
+### Integrations (GitHub)
+
+- Structured source: org → repo → issue/PR
+- Bidirectional open/closed sync; labels → tags
+- Auto-create todos on sync; manual link by URL
+- CLI: `t integrations github …`; Beak Flow source/tag filters
 
 ## Planned / not in v1
 
@@ -68,5 +77,6 @@ Felicity Todos is a local-first task manager with a terminal CLI, optional AI, a
 | [README.md](README.md) | Doc index |
 | [commands.md](commands.md) | CLI reference |
 | [beak-flow.md](beak-flow.md) | Web UI guide |
+| [../ui/README.md](../ui/README.md) | UI developer setup (Vite, build, scripts) |
 | [api.md](api.md) | REST API |
 | [architecture.md](architecture.md) | Code and schema |

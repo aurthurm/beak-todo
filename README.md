@@ -2,7 +2,7 @@
 
 A powerful command-line todo application with optional **Beak Flow** — a local Vue planning gateway for brain dump, calendar drag-and-drop, and AI-assisted organisation.
 
-Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow guide](docs/beak-flow.md) · [API reference](docs/api.md) · [Architecture](docs/architecture.md)
+Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/beak-flow.md) · [GitHub sync](docs/integrations/github.md) · [API](docs/api.md) · [Architecture](docs/architecture.md)
 
 ![Demo](demo.gif)
 
@@ -48,7 +48,15 @@ Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow guide](do
   - Horizontal calendar strip with drag-and-drop
   - Day view grouped by priority
   - AI drawer with preview-before-apply
+  - Source sidebar: filter by local vs GitHub org/repo and by tags
   - Same SQLite database as the CLI
+
+- 🔗 **GitHub integration** (optional)
+  - Structured source: `GitHub → organisation → repository → issue/PR`
+  - Tags for context (`bug`, `lims`, `urgent`) — separate from org/repo identity
+  - Bidirectional open/closed sync; labels import as tags
+  - Auto-create local todos on sync; manual link by URL
+  - CLI: `t integrations github …` · API + Beak Flow UI filters
 
 ## Installation
 
@@ -60,22 +68,33 @@ pip install felicity-todos
 
 ```bash
 pip install -e .
-
-# Terminal 1 — API
-beak-flow
-
-# Terminal 2 — UI (hot reload)
-cd ui && npm install && npm run dev
+beak-flow build-ui    # once per UI change (requires Node.js)
+beak-flow             # API + UI at http://127.0.0.1:8787
 ```
 
-| URL | Service |
-|-----|---------|
-| http://localhost:5173 | Vue UI (dev) |
-| http://127.0.0.1:8787 | API + OpenAPI `/docs` |
+| Command | Description |
+|---------|-------------|
+| `beak-flow` / `beak-flow run` | Foreground server (single port) |
+| `beak-flow build-ui` | Build Vue UI into `src/api/static/` |
+| `beak-flow install-service` | Background service at login (systemd / launchd / Task Scheduler) |
+| `beak-flow service-status` | Check service state |
+| `beak-flow uninstall-service` | Remove OS service |
 
-Single-port production: `cd ui && npm run build && beak-flow`
+**UI development** (hot reload): run `beak-flow` in one terminal and `cd ui && npm run dev` in another (Vite proxies `/api` → 8787).
 
 Set `OPENAI_API_KEY` (or see `t ai doctor`) for brain dump and AI features in the UI.
+
+### GitHub integration
+
+```bash
+export GITHUB_TOKEN="ghp_..."
+t integrations github setup
+t integrations github repos add your-org/your-repo
+t integrations github doctor
+t integrations github sync
+```
+
+Config: `~/.todos/integrations/github.toml`. See [docs/integrations/github.md](docs/integrations/github.md).
 
 ## Quick Start
 
@@ -316,14 +335,18 @@ t ln 5
 5. **Regular Updates**: Use `t stats` to get an overview of your tasks
 6. **Backup**: Regularly export your tasks using `t export`
 7. **Planning**: Use Beak Flow for brain dump and calendar drag; use `t` for quick capture
+8. **GitHub**: Use org/repo filters in Beak Flow; use tags for context, not for repository identity
 
 ## Project structure
 
 ```text
-src/          Python package (CLI, API, services, AI)
-ui/           Vue 3 Beak Flow frontend
-tests/        pytest (services + API)
-docs/         Command reference, API, architecture, Beak Flow guide
+src/
+  integrations/   GitHub (+ future providers)
+  services/       todos, external, tags, AI
+  api/            Beak Flow REST + static UI
+ui/               Vue 3 frontend
+tests/            pytest
+docs/             CLI, API, Beak Flow, integrations
 ```
 
 ## Documentation
@@ -333,7 +356,10 @@ docs/         Command reference, API, architecture, Beak Flow guide
 | [docs/README.md](docs/README.md) | Documentation index |
 | [docs/commands.md](docs/commands.md) | Full CLI reference |
 | [docs/beak-flow.md](docs/beak-flow.md) | Web UI workflows |
+| [ui/README.md](ui/README.md) | UI dev setup (npm, Vite, build output) |
 | [docs/api.md](docs/api.md) | REST API for Beak Flow |
+| [docs/integrations.md](docs/integrations.md) | Integrations overview |
+| [docs/integrations/github.md](docs/integrations/github.md) | GitHub issues/PR sync |
 | [docs/architecture.md](docs/architecture.md) | Schema and code layout |
 | [docs/features.md](docs/features.md) | Feature list and roadmap |
 

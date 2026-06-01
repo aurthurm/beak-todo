@@ -31,6 +31,11 @@ export const usePlannerStore = defineStore("planner", () => {
   const detailTodoId = ref<number | null>(null);
   const mobileTab = ref<"inbox" | "calendar" | "today" | "ai">("inbox");
 
+  const filterSource = ref<"all" | "local" | "github">("all");
+  const filterOrganisation = ref<string | null>(null);
+  const filterRepository = ref<string | null>(null);
+  const filterTags = ref<string[]>([]);
+
   const calendarEnd = computed(() =>
     addDays(calendarStart.value, calendarDays - 1)
   );
@@ -49,18 +54,66 @@ export const usePlannerStore = defineStore("planner", () => {
     return cols;
   });
 
+  function listParams(
+    extra: Record<string, string | boolean | string[]>
+  ): Record<string, string | boolean | string[]> {
+    const p = { ...extra };
+    if (filterSource.value === "local") p.source = "local";
+    if (filterSource.value === "github") p.source = "github";
+    if (filterOrganisation.value) p.organisation = filterOrganisation.value;
+    if (filterRepository.value) p.repository = filterRepository.value;
+    if (filterTags.value.length) p.tag = [...filterTags.value];
+    return p;
+  }
+
+  function setSourceFilter(
+    source: "all" | "local" | "github",
+    org?: string | null,
+    repo?: string | null
+  ) {
+    filterSource.value = source;
+    filterOrganisation.value = org ?? null;
+    filterRepository.value = repo ?? null;
+    refresh();
+  }
+
+  function toggleTagFilter(name: string) {
+    const i = filterTags.value.indexOf(name);
+    if (i >= 0) filterTags.value = filterTags.value.filter((t) => t !== name);
+    else filterTags.value = [...filterTags.value, name];
+    refresh();
+  }
+
+  async function syncGitHub() {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await api.githubSync();
+      if (res.errors?.length) {
+        error.value = res.errors.join("; ");
+      }
+      await refresh();
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : String(e);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function refresh() {
     loading.value = true;
     error.value = null;
     try {
       const [inboxData, calData, dayData] = await Promise.all([
-        api.listTodos({ inbox: true }),
-        api.listTodos({
-          due_from: calendarStart.value,
-          due_to: calendarEnd.value,
-          completed: false,
-        }),
-        api.listTodos({ due_date: selectedDate.value }),
+        api.listTodos(listParams({ inbox: true })),
+        api.listTodos(
+          listParams({
+            due_from: calendarStart.value,
+            due_to: calendarEnd.value,
+            completed: false,
+          })
+        ),
+        api.listTodos(listParams({ due_date: selectedDate.value })),
       ]);
       inbox.value = inboxData;
       calendarTodos.value = calData;
@@ -173,6 +226,14 @@ export const usePlannerStore = defineStore("planner", () => {
     actionPreview,
     detailTodoId,
     mobileTab,
+    filterSource,
+    filterOrganisation,
+    filterRepository,
+    filterTags,
+    listParams,
+    setSourceFilter,
+    toggleTagFilter,
+    syncGitHub,
     dayColumns,
     refresh,
     patchTodo,

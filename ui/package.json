@@ -2,6 +2,7 @@
   "name": "beak-flow-ui",
   "private": true,
   "version": "0.1.0",
+  "description": "Beak Flow Vue UI — production build writes to ../src/api/static (see ui/README.md)",
   "type": "module",
   "scripts": {
     "dev": "vite",

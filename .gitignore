@@ -83,4 +83,6 @@ Thumbs.db
 
 # Beak Flow UI
 ui/node_modules/
-ui/dist/ 
+ui/dist/
+src/api/static/*
+!src/api/static/.gitkeep

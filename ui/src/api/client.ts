@@ -1,3 +1,13 @@
+export interface ExternalSource {
+  provider: string;
+  organisation: string;
+  repository: string;
+  item_type: string;
+  item_number: number;
+  state: string;
+  url: string;
+}
+
 export interface Todo {
   id: number;
   message: string;
@@ -8,6 +18,23 @@ export interface Todo {
   completed: boolean;
   due_date: string | null;
   sort_order: number;
+  source_type: string;
+  external: ExternalSource | null;
+  tags: string[];
+  display_source: string | null;
+}
+
+export interface TagInfo {
+  id: number;
+  name: string;
+  todo_count: number;
+}
+
+export interface GitHubSourcesTree {
+  organisations: Record<
+    string,
+    { organisation: string; repository: string; enabled: boolean }[]
+  >;
 }
 
 export interface ParsedTask {
@@ -58,13 +85,28 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   health: () => req<{ status: string; ai_enabled: boolean }>("/health"),
 
-  listTodos: (params: Record<string, string | boolean>) => {
+  listTodos: (params: Record<string, string | boolean | string[]>) => {
     const q = new URLSearchParams();
     for (const [k, v] of Object.entries(params)) {
-      if (v !== undefined && v !== "") q.set(k, String(v));
+      if (v === undefined || v === "") continue;
+      if (Array.isArray(v)) {
+        v.forEach((item) => q.append(k, item));
+      } else {
+        q.set(k, String(v));
+      }
     }
     return req<Todo[]>(`/todos?${q}`);
   },
+
+  listTags: () => req<TagInfo[]>("/tags"),
+
+  githubSources: () => req<GitHubSourcesTree>("/integrations/github/sources"),
+
+  githubSync: () =>
+    req<{ created: number; updated: number; pushed: number; errors: string[] }>(
+      "/integrations/github/sync",
+      { method: "POST" }
+    ),
 
   getTodo: (id: number) => req<Todo>(`/todos/${id}`),
 

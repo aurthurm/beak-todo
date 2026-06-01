@@ -2,9 +2,10 @@ from setuptools import find_packages, setup
 
 setup(
     name="felicity-todos",
-    version="0.3.0",
+    version="0.4.0",
     packages=find_packages(),
     include_package_data=True,
+    package_data={"src.api": ["static/**/*"]},
     install_requires=[
         "typer>=0.7.0",
         "colorama>=0.4.4",
@@ -17,16 +18,17 @@ setup(
         "tomli-w>=1.0.0",
         "fastapi>=0.100.0",
         "uvicorn[standard]>=0.23.0",
+        "httpx>=0.27.0",
     ],
     entry_points="""
         [console_scripts]
         t=src.main:app
-        beak-flow=src.api.server:main
+        beak-flow=src.api.server:main_entry
     """,
     author="Felicity Todos Team",
     author_email="example@example.com",
-    description="CLI todo app with optional AI and Beak Flow planning UI",
-    keywords="todo, cli, productivity, ai, beak-flow, planning",
+    description="CLI todo app with AI, Beak Flow UI, and GitHub integration",
+    keywords="todo, cli, productivity, ai, beak-flow, planning, github",
     url="https://github.com/example/felicity-todos",
     classifiers=[
         "Development Status :: 3 - Alpha",
