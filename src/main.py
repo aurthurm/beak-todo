@@ -9,7 +9,9 @@ from rich.text import Text
 
 from src.ai import ai_app
 from src.config_cli import config_app
+from src.email_cli import email_app
 from src.integrations_cli import integrations_app
+from src.report_cli import report_app
 from src.tag_cli import tag_app
 from src.todos import (
     PRIORITIES,
@@ -33,6 +35,8 @@ app.add_typer(config_app, name="config")
 app.add_typer(ai_app, name="ai")
 app.add_typer(integrations_app, name="integrations")
 app.add_typer(tag_app, name="tag")
+app.add_typer(report_app, name="report")
+app.add_typer(email_app, name="email")
 console = Console()
 
 

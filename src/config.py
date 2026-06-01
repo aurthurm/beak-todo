@@ -35,6 +35,22 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "claude_bin": "claude",
         "timeout_seconds": 120,
     },
+    "email": {
+        "provider": "resend",
+        "from": "Your Name <updates@yourdomain.com>",
+        "default_to": "",
+        "send_mode": "draft_first",
+    },
+    "reports": {
+        "weekly": {
+            "enabled": True,
+            "include_completed_tasks": True,
+            "include_github_issues": True,
+            "include_github_prs": True,
+            "include_blockers": True,
+            "include_next_week_plan": True,
+        },
+    },
 }
 
 ALLOWED_PROVIDERS = frozenset(
@@ -66,6 +82,24 @@ class HarnessConfig:
     codex_bin: str = "codex"
     claude_bin: str = "claude"
     timeout_seconds: int = 120
+
+
+@dataclass
+class EmailConfig:
+    provider: str = "resend"
+    from_address: str = "Your Name <updates@yourdomain.com>"
+    default_to: str = ""
+    send_mode: str = "draft_first"
+
+
+@dataclass
+class WeeklyReportConfig:
+    enabled: bool = True
+    include_completed_tasks: bool = True
+    include_github_issues: bool = True
+    include_github_prs: bool = True
+    include_blockers: bool = True
+    include_next_week_plan: bool = True
 
 
 def get_config_path() -> Path:
@@ -137,6 +171,28 @@ def get_ai_config() -> AiConfig:
         model=str(cfg.get("model", "gpt-4o-mini")),
         temperature=float(cfg.get("temperature", 0.2)),
         show_provider_on_use=bool(cfg.get("show_provider_on_use", True)),
+    )
+
+
+def get_email_config() -> EmailConfig:
+    cfg = load_config().get("email", {})
+    return EmailConfig(
+        provider=str(cfg.get("provider", "resend")),
+        from_address=str(cfg.get("from", "Your Name <updates@yourdomain.com>")),
+        default_to=str(cfg.get("default_to", "")),
+        send_mode=str(cfg.get("send_mode", "draft_first")),
+    )
+
+
+def get_weekly_report_config() -> WeeklyReportConfig:
+    cfg = load_config().get("reports", {}).get("weekly", {})
+    return WeeklyReportConfig(
+        enabled=bool(cfg.get("enabled", True)),
+        include_completed_tasks=bool(cfg.get("include_completed_tasks", True)),
+        include_github_issues=bool(cfg.get("include_github_issues", True)),
+        include_github_prs=bool(cfg.get("include_github_prs", True)),
+        include_blockers=bool(cfg.get("include_blockers", True)),
+        include_next_week_plan=bool(cfg.get("include_next_week_plan", True)),
     )
 
 

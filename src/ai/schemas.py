@@ -77,3 +77,12 @@ class TodoPatchProposal(BaseModel):
 class ActionPreviewResponse(BaseModel):
     description: str
     patches: list[TodoPatchProposal] = Field(default_factory=list)
+
+
+class WeeklyReportDraft(BaseModel):
+    subject: str = Field(description="Email subject line")
+    body_text: str = Field(description="Plain-text email body")
+    body_html: Optional[str] = Field(
+        default=None,
+        description="Optional HTML body; plain text is required",
+    )

@@ -28,6 +28,7 @@ from src.ai.schemas import (
     RisksResponse,
     SearchRewrite,
     SummaryResponse,
+    WeeklyReportDraft,
 )
 from src.config import (
     ALLOWED_PROVIDERS,
@@ -362,3 +363,51 @@ def chat(
             typer.echo(f"\nAssistant> {result.answer}\n")
         except Exception as e:
             typer.echo(f"Error: {e}\n")
+
+
+def email(
+    request: str = typer.Argument(..., help="How to adjust the weekly report draft"),
+    provider: Optional[str] = typer.Option(None, "--provider"),
+    verbose: bool = typer.Option(False, "--verbose"),
+):
+    """Preview AI edits to a weekly report (does not send)."""
+    from src.integrations.email.draft import get_current_draft
+    from src.reports.collector import collect_weekly_context, default_weekly_period
+    from src.reports.generator import context_to_dict
+    from src.services.report_service import generate_weekly
+
+    prov = _resolve_and_show(provider, verbose)
+    draft = get_current_draft()
+    if draft and draft.period_start and draft.period_end:
+        ctx = collect_weekly_context(draft.period_start, draft.period_end)
+        context = {
+            "current_draft": {
+                "subject": draft.subject,
+                "body_text": draft.body_text,
+            },
+            "work_context": context_to_dict(ctx),
+            "user_request": request,
+        }
+    else:
+        period = default_weekly_period()
+        content, _ = generate_weekly(period.start, period.end, use_ai=False, save_draft=False)
+        context = {
+            "current_draft": {"subject": content.subject, "body_text": content.body_text},
+            "user_request": request,
+        }
+
+    messages = [
+        {"role": "system", "content": prompts.weekly_report_system()},
+        {
+            "role": "user",
+            "content": (
+                "Revise the weekly report per the user request. "
+                "Use only facts from work_context.\n"
+                + json.dumps(context, indent=2)
+            ),
+        },
+    ]
+    result = complete_json(prov, messages, WeeklyReportDraft, verbose=verbose)
+    console.print(Panel(result.subject, title="Preview subject", border_style="cyan"))
+    console.print(Panel(result.body_text, title="Preview body"))
+    typer.echo("\nTo save and send: t email draft weekly  (or edit draft) then t email send-draft")

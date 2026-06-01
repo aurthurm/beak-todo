@@ -1,6 +1,11 @@
 # Integrations
 
-Beak Todo can link local planning tasks to work in external systems. The first provider is **GitHub** (issues and pull requests).
+Beak Todo can link local planning tasks to work in external systems and send **weekly work reports** by email.
+
+| Channel | Provider | Doc |
+|---------|----------|-----|
+| Input / sync | GitHub (issues & PRs) | [github.md](integrations/github.md) |
+| Output | Resend (email) | [email.md](integrations/email.md) |
 
 ## Design
 
@@ -49,3 +54,15 @@ See [api.md](api.md) — `/api/integrations/github/*`, todo `source` / `tag` fil
 3. Add `external_sources.provider` value and CLI group under `t integrations`
 
 See [integrations/github.md](integrations/github.md) for GitHub-specific sync rules.
+
+## Email (Resend)
+
+Weekly reports: todos + GitHub + notes → draft → user approval → send.
+
+```bash
+t email doctor
+t email draft weekly
+t email send-draft
+```
+
+See [integrations/email.md](integrations/email.md).

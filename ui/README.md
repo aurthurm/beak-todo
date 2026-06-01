@@ -61,7 +61,9 @@ ui/
 │   ├── main.ts
 │   ├── styles.css
 │   ├── api/client.ts        # fetch /api/* (relative URLs)
-│   ├── stores/planner.ts    # Pinia state
+│   ├── stores/
+│   │   ├── planner.ts
+│   │   └── reports.ts       # weekly report draft state
 │   └── components/
 │       ├── BrainDumpPanel.vue
 │       ├── CalendarStrip.vue
@@ -69,6 +71,7 @@ ui/
 │       ├── SourceFilterPanel.vue  # GitHub org/repo + tags
 │       ├── TaskCard.vue           # shows display_source + tags
 │       ├── TaskDetailModal.vue
+│       ├── ReportsPanel.vue     # weekly report draft + send
 │       └── AiDrawer.vue
 ├── vite.config.ts           # outDir → ../src/api/static
 └── package.json
@@ -94,9 +97,14 @@ Use **Sync GitHub** to run `POST /api/integrations/github/sync`. Task cards show
 
 `[GitHub] [beak-insights/beak-lims] #1025`
 
+## Weekly reports
+
+Use the **Reports** tab: generate a draft from todos/GitHub data, preview, then send via Resend. Configure `[email]` in `~/.todos/config.toml` and set `RESEND_API_KEY`.
+
 ## Related documentation
 
 - [../docs/beak-flow.md](../docs/beak-flow.md) — UI workflows, service install, troubleshooting
+- [../docs/integrations/email.md](../docs/integrations/email.md) — Resend setup and draft-first send
 - [../docs/integrations/github.md](../docs/integrations/github.md) — GitHub sync setup
 - [../docs/api.md](../docs/api.md) — REST endpoints
 - [../docs/architecture.md](../docs/architecture.md) — Backend + data flow

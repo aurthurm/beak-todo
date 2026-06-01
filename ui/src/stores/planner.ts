@@ -29,7 +29,7 @@ export const usePlannerStore = defineStore("planner", () => {
   const actionPreview = ref<ActionPreview | null>(null);
 
   const detailTodoId = ref<number | null>(null);
-  const mobileTab = ref<"inbox" | "calendar" | "today" | "ai">("inbox");
+  const mobileTab = ref<"inbox" | "calendar" | "today" | "ai" | "reports">("inbox");
 
   const filterSource = ref<"all" | "local" | "github">("all");
   const filterOrganisation = ref<string | null>(null);

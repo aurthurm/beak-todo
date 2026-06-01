@@ -75,6 +75,8 @@ def migrate_db() -> None:
         cursor.execute(
             "ALTER TABLE todos ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
         )
+    if "completed_at" not in columns:
+        cursor.execute("ALTER TABLE todos ADD COLUMN completed_at TIMESTAMP")
 
     cursor.execute(
         """
@@ -147,6 +149,37 @@ def migrate_db() -> None:
     )
     cursor.execute(
         "CREATE INDEX IF NOT EXISTS idx_todo_tags_tag ON todo_tags (tag_id)"
+    )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            report_type TEXT NOT NULL,
+            period_start TEXT,
+            period_end TEXT,
+            subject TEXT NOT NULL,
+            body_text TEXT NOT NULL,
+            body_html TEXT,
+            status TEXT DEFAULT 'draft',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            sent_at TIMESTAMP
+        )
+        """
+    )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS email_sends (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            report_id INTEGER,
+            provider TEXT NOT NULL,
+            recipient TEXT NOT NULL,
+            provider_message_id TEXT,
+            status TEXT,
+            error_message TEXT,
+            sent_at TIMESTAMP,
+            FOREIGN KEY (report_id) REFERENCES reports (id)
+        )
+        """
     )
     conn.commit()
     conn.close()

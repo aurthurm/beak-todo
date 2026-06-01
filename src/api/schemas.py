@@ -156,3 +156,60 @@ class GitHubStatusResponse(BaseModel):
     configured_repos: int
     sources_in_db: int
     last_errors: list[str] = []
+
+
+class WeeklyReportGenerateRequest(BaseModel):
+    date_from: Optional[str] = Field(default=None, alias="from")
+    date_to: Optional[str] = Field(default=None, alias="to")
+    use_ai: bool = True
+    provider: Optional[str] = None
+
+    model_config = {"populate_by_name": True}
+
+
+class ReportDraftOut(BaseModel):
+    id: int
+    report_type: str
+    period_start: Optional[str] = None
+    period_end: Optional[str] = None
+    subject: str
+    body_text: str
+    body_html: Optional[str] = None
+    status: str
+    created_at: Optional[str] = None
+    sent_at: Optional[str] = None
+
+
+class SendEmailRequest(BaseModel):
+    to: Optional[str] = None
+    force: bool = False
+
+
+class EmailSendOut(BaseModel):
+    id: int
+    report_id: Optional[int] = None
+    provider_message_id: Optional[str] = None
+    status: str
+    recipient: str
+    error_message: Optional[str] = None
+    sent_at: Optional[str] = None
+
+
+class ReportHistoryOut(BaseModel):
+    reports: list[ReportDraftOut]
+
+
+class EmailHistoryOut(BaseModel):
+    sends: list[EmailSendOut]
+
+
+class EmailStatusOut(BaseModel):
+    ok: bool
+    messages: list[str]
+
+
+class EmailConfigOut(BaseModel):
+    provider: str
+    from_address: str
+    default_to: str
+    send_mode: str

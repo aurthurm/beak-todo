@@ -8,6 +8,7 @@ import CalendarStrip from "./components/CalendarStrip.vue";
 import DayView from "./components/DayView.vue";
 import TaskDetailModal from "./components/TaskDetailModal.vue";
 import AiDrawer from "./components/AiDrawer.vue";
+import ReportsPanel from "./components/ReportsPanel.vue";
 
 const store = usePlannerStore();
 const searchQuery = ref("");
@@ -38,6 +39,14 @@ onMounted(() => store.refresh());
         <button type="button" @click="store.goThisWeek">This Week</button>
         <button type="button" @click="store.runAiPlan">AI Plan</button>
         <button type="button" @click="store.drawerOpen = true">AI</button>
+        <button
+          type="button"
+          :class="{ active: store.mobileTab === 'reports' }"
+          class="desktop-only"
+          @click="store.mobileTab = 'reports'"
+        >
+          Reports
+        </button>
       </div>
     </header>
 
@@ -66,12 +75,26 @@ onMounted(() => store.refresh());
       >
         AI
       </button>
+      <button
+        :class="{ active: store.mobileTab === 'reports' }"
+        @click="store.mobileTab = 'reports'"
+      >
+        Reports
+      </button>
     </nav>
 
     <p v-if="store.error" class="error">{{ store.error }}</p>
     <p v-if="store.loading" class="loading">Loading…</p>
 
-    <main class="layout-grid">
+    <div
+      v-if="store.mobileTab === 'reports'"
+      class="reports-view"
+      :class="{ 'mobile-show': store.mobileTab === 'reports' }"
+    >
+      <ReportsPanel />
+    </div>
+
+    <main v-show="store.mobileTab !== 'reports'" class="layout-grid">
       <div
         class="col-left desktop-only"
         :class="{ 'mobile-show': store.mobileTab === 'inbox' }"
@@ -161,7 +184,18 @@ onMounted(() => store.refresh());
   font-size: 0.85rem;
   color: var(--muted);
 }
+.reports-view {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
 @media (max-width: 900px) {
+  .reports-view {
+    display: none;
+  }
+  .reports-view.mobile-show {
+    display: block;
+  }
   .layout-grid > * {
     display: none;
   }

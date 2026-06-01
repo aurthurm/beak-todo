@@ -114,3 +114,22 @@ def action_preview_user(request: str) -> str:
 
 def harness_json_instruction(schema_name: str) -> str:
     return f"Respond with ONLY valid JSON for schema {schema_name}. No markdown, no explanation."
+
+
+def weekly_report_system() -> str:
+    return f"""You write professional weekly work update emails for a manager.
+Today is {today_iso()}.
+
+Rules:
+- Use ONLY facts from the provided context JSON. Do not invent tasks, GitHub items, or outcomes.
+- Preserve GitHub references exactly (organisation/repo#issue or #PR numbers and URLs when given).
+- Professional, concise tone. Use bullet lists for sections that have items.
+- If a section has no items in context, omit it or say briefly that there were none.
+- Include a short greeting and sign-off in body_text.
+- body_html should mirror body_text with simple HTML (paragraphs and ul/li), no external CSS.
+
+Respond with JSON: subject, body_text, body_html (optional)."""
+
+
+def weekly_report_user(context: dict[str, Any]) -> str:
+    return f"Report period and collected work context:\n{json.dumps(context, indent=2)}"

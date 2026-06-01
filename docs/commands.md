@@ -164,6 +164,30 @@ See [beak-flow.md](beak-flow.md).
 
 See [integrations/github.md](integrations/github.md).
 
+## Reports
+
+| Command | Description |
+|---------|-------------|
+| `t report weekly` | Weekly report for last 7 days (stdout) |
+| `t report weekly --from DATE --to DATE` | Custom period |
+| `t report weekly --no-ai` | Deterministic bullets only |
+| `t report weekly --save` | Save as email draft |
+
+## Email (Resend)
+
+| Command | Description |
+|---------|-------------|
+| `t email doctor` | Check `RESEND_API_KEY` and config |
+| `t email draft weekly` | Generate and save weekly draft |
+| `t email show-draft` | Show current draft |
+| `t email send-draft [--to addr]` | Send approved draft |
+| `t email send --to … --subject … --body-file path` | One-off send |
+| `t email history` | Recent sends |
+| `t email cancel-draft` | Cancel current draft |
+| `t ai email "…"` | Preview AI edits to draft (no send) |
+
+Requires `RESEND_API_KEY`. See [integrations/email.md](integrations/email.md).
+
 ## Tags
 
 | Command | Description |

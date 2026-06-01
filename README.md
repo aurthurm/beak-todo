@@ -2,7 +2,7 @@
 
 A powerful command-line todo application with optional **Beak Flow** — a local Vue planning gateway for brain dump, calendar drag-and-drop, and AI-assisted organisation.
 
-Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/beak-flow.md) · [GitHub sync](docs/integrations/github.md) · [API](docs/api.md) · [Architecture](docs/architecture.md)
+Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/beak-flow.md) · [GitHub sync](docs/integrations/github.md) · [Email reports](docs/integrations/email.md) · [API](docs/api.md) · [Architecture](docs/architecture.md)
 
 ![Demo](demo.gif)
 
@@ -58,6 +58,12 @@ Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow](docs/bea
   - Auto-create local todos on sync; manual link by URL
   - CLI: `t integrations github …` · API + Beak Flow UI filters
 
+- 📧 **Weekly email reports** (optional, Resend)
+  - Draft-first: AI or deterministic summary from todos + GitHub + notes
+  - CLI: `t report weekly`, `t email draft weekly`, `t email send-draft`
+  - Beak Flow **Reports** tab for preview and send
+  - Requires `RESEND_API_KEY` — see [docs/integrations/email.md](docs/integrations/email.md)
+
 ## Installation
 
 ```bash
@@ -95,6 +101,18 @@ t integrations github sync
 ```
 
 Config: `~/.todos/integrations/github.toml`. See [docs/integrations/github.md](docs/integrations/github.md).
+
+### Weekly email reports
+
+```bash
+export RESEND_API_KEY="re_..."
+# Add [email] section to ~/.todos/config.toml (from, default_to)
+t email doctor
+t email draft weekly
+t email send-draft
+```
+
+See [docs/integrations/email.md](docs/integrations/email.md).
 
 ## Quick Start
 

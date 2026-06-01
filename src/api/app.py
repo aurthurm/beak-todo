@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from src.api.routes import ai, categories, integrations_github, tags, todos
+from src.api.routes import ai, categories, integrations_github, reports, tags, todos
 from src.api.schemas import HealthResponse
 from src.api.static_paths import resolve_static_dir
 from src.config import get_ai_config, get_config_path
@@ -48,6 +48,7 @@ app.include_router(categories.router, prefix="/api")
 app.include_router(tags.router, prefix="/api")
 app.include_router(integrations_github.router, prefix="/api")
 app.include_router(ai.router, prefix="/api")
+app.include_router(reports.router, prefix="/api")
 
 
 @app.get("/api/health", response_model=HealthResponse)

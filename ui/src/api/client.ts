@@ -57,6 +57,26 @@ export interface PlanResponse {
   summary: string;
 }
 
+export interface ReportDraft {
+  id: number;
+  report_type: string;
+  period_start: string | null;
+  period_end: string | null;
+  subject: string;
+  body_text: string;
+  body_html: string | null;
+  status: string;
+  created_at: string | null;
+  sent_at: string | null;
+}
+
+export interface EmailConfig {
+  provider: string;
+  from_address: string;
+  default_to: string;
+  send_mode: string;
+}
+
 export interface ActionPreview {
   description: string;
   patches: {
@@ -168,6 +188,36 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ patches }),
     }),
+
+  emailConfig: () => req<EmailConfig>("/email/config"),
+
+  emailStatus: () => req<{ ok: boolean; messages: string[] }>("/email/status"),
+
+  generateWeeklyReport: (body: {
+    from: string;
+    to: string;
+    use_ai: boolean;
+  }) =>
+    req<ReportDraft>("/reports/weekly/generate", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  getReportDraft: () => req<ReportDraft | null>("/reports/draft"),
+
+  sendReportDraft: (to?: string) =>
+    req<{
+      id: number;
+      provider_message_id: string | null;
+      status: string;
+      recipient: string;
+    }>("/reports/draft/send", {
+      method: "POST",
+      body: JSON.stringify({ to: to || null }),
+    }),
+
+  cancelReportDraft: () =>
+    req<void>("/reports/draft", { method: "DELETE" }),
 };
 
 export function formatDayLabel(iso: string): string {

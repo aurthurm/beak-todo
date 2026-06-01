@@ -96,7 +96,7 @@ Use the **Sources** sidebar to filter local vs GitHub tasks by organisation and 
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────────┐
-│ Beak Flow    [Search...]              Today | This Week | AI Plan | AI  │
+│ Beak Flow    [Search...]     Today | This Week | AI Plan | AI | Reports │
 ├──────────────┬────────────────────────────────────┬─────────────────────┤
 │ Brain Dump   │  ← Mon │ Tue │ Wed │ Thu │ Fri →   │ Selected day        │
 │ + Inbox      │  draggable cards per column        │ Overdue / priority  │
@@ -116,7 +116,18 @@ Use the **Sources** sidebar to filter local vs GitHub tasks by organisation and 
 
 ### Mobile (< 900px)
 
-Tab bar: **Inbox | Calendar | Today | AI** — one panel at a time. Same API.
+Tab bar: **Inbox | Calendar | Today | AI | Reports** — one panel at a time. Same API.
+
+### Reports
+
+Open **Reports** (top bar on desktop, tab on mobile):
+
+1. Pick date range (default last 7 days).  
+2. **Generate draft** — AI summary or deterministic bullets (`use_ai` checkbox).  
+3. Review subject and body.  
+4. **Send email** via Resend (uses `default_to` from `~/.todos/config.toml` or the recipient field).
+
+Requires `RESEND_API_KEY` and `[email]` config. See [integrations/email.md](integrations/email.md).
 
 ## Key workflows
 

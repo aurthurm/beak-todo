@@ -295,3 +295,43 @@ Runs bidirectional sync. Response: `{ "created", "updated", "pushed", "errors" }
 Removes link; local todo remains.
 
 See [integrations/github.md](integrations/github.md).
+
+## Reports and email
+
+### `POST /api/reports/weekly/generate`
+
+```json
+{ "from": "2026-05-01", "to": "2026-05-07", "use_ai": true }
+```
+
+Creates a `draft` report row and returns it.
+
+### `GET /api/reports/draft`
+
+Current draft or `null`.
+
+### `POST /api/reports/draft/send`
+
+```json
+{ "to": "boss@example.com", "force": false }
+```
+
+Sends via Resend; marks report `sent`.
+
+### `DELETE /api/reports/draft`
+
+Cancels the current draft.
+
+### `GET /api/reports/history`
+
+Past reports (newest first).
+
+### `GET /api/email/status`
+
+Doctor summary: `{ "ok", "messages" }`.
+
+### `GET /api/email/config`
+
+`from_address`, `default_to`, `send_mode`, `provider`.
+
+See [integrations/email.md](integrations/email.md).

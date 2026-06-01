@@ -19,6 +19,7 @@ setup(
         "fastapi>=0.100.0",
         "uvicorn[standard]>=0.23.0",
         "httpx>=0.27.0",
+        "resend>=2.0.0",
     ],
     entry_points="""
         [console_scripts]

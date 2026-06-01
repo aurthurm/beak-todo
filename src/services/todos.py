@@ -248,6 +248,10 @@ def update_todo(
     if completed is not None:
         updates.append("completed = ?")
         values.append(1 if completed else 0)
+        if completed:
+            updates.append("completed_at = CURRENT_TIMESTAMP")
+        else:
+            updates.append("completed_at = NULL")
     if sort_order is not None:
         updates.append("sort_order = ?")
         values.append(sort_order)
