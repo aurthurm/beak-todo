@@ -85,5 +85,32 @@ def chat_user(message: str) -> str:
     return message
 
 
+def brain_dump_system(categories: list[str]) -> str:
+    cats = ", ".join(categories) if categories else "General, Work, Personal"
+    return f"""Split messy brain-dump text into multiple structured todos.
+Today is {today_iso()}.
+
+Each task needs: message, priority (0-3), category (prefer: {cats}), due_date (YYYY-MM-DD or null).
+One thought per line or bullet in the input may become one task.
+Respond with JSON: {{ "tasks": [ ... ] }} only."""
+
+
+def brain_dump_user(text: str) -> str:
+    return f"Brain dump:\n{text}"
+
+
+def action_preview_system(tasks_context: list[dict[str, Any]]) -> str:
+    return f"""Propose todo changes as patches. Today is {today_iso()}.
+Open tasks context:
+{json.dumps(tasks_context[:40], indent=2)}
+
+Return JSON with description and patches (todo_id, due_date, clear_due, priority, completed).
+Only suggest changes that match the user request. Do not invent todo ids."""
+
+
+def action_preview_user(request: str) -> str:
+    return f"User request: {request}"
+
+
 def harness_json_instruction(schema_name: str) -> str:
     return f"Respond with ONLY valid JSON for schema {schema_name}. No markdown, no explanation."

@@ -59,3 +59,21 @@ class BreakdownResponse(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str = Field(description="Assistant reply")
+
+
+class BrainDumpResponse(BaseModel):
+    tasks: list[ParsedTask] = Field(default_factory=list)
+
+
+class TodoPatchProposal(BaseModel):
+    todo_id: int
+    due_date: Optional[str] = None
+    clear_due: bool = False
+    priority: Optional[int] = Field(default=None, ge=0, le=3)
+    completed: Optional[bool] = None
+    message: Optional[str] = None
+
+
+class ActionPreviewResponse(BaseModel):
+    description: str
+    patches: list[TodoPatchProposal] = Field(default_factory=list)

@@ -79,4 +79,8 @@ coverage.xml
 
 # System Files
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Beak Flow UI
+ui/node_modules/
+ui/dist/ 

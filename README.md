@@ -1,6 +1,8 @@
-# Felicity Todos
+# Felicity Todos / Beak Flow
 
-A powerful, feature-rich command-line todo application with a beautiful interface and comprehensive task management capabilities.
+A powerful command-line todo application with optional **Beak Flow** — a local Vue planning gateway for brain dump, calendar drag-and-drop, and AI-assisted organisation.
+
+Full documentation: **[docs/README.md](docs/README.md)** · [Beak Flow guide](docs/beak-flow.md) · [API reference](docs/api.md) · [Architecture](docs/architecture.md)
 
 ![Demo](demo.gif)
 
@@ -41,11 +43,39 @@ A powerful, feature-rich command-line todo application with a beautiful interfac
   - Task breakdown and read-only chat
   - Dual-mode providers: direct API (LiteLLM) or harness CLI (Codex/Claude, opt-in)
 
+- 📅 **Beak Flow** (optional web UI)
+  - Brain dump with AI Organise → structured tasks
+  - Horizontal calendar strip with drag-and-drop
+  - Day view grouped by priority
+  - AI drawer with preview-before-apply
+  - Same SQLite database as the CLI
+
 ## Installation
 
 ```bash
 pip install felicity-todos
 ```
+
+### Beak Flow (web UI)
+
+```bash
+pip install -e .
+
+# Terminal 1 — API
+beak-flow
+
+# Terminal 2 — UI (hot reload)
+cd ui && npm install && npm run dev
+```
+
+| URL | Service |
+|-----|---------|
+| http://localhost:5173 | Vue UI (dev) |
+| http://127.0.0.1:8787 | API + OpenAPI `/docs` |
+
+Single-port production: `cd ui && npm run build && beak-flow`
+
+Set `OPENAI_API_KEY` (or see `t ai doctor`) for brain dump and AI features in the UI.
 
 ## Quick Start
 
@@ -285,6 +315,27 @@ t ln 5
 4. **Notes**: Use notes for additional details and context
 5. **Regular Updates**: Use `t stats` to get an overview of your tasks
 6. **Backup**: Regularly export your tasks using `t export`
+7. **Planning**: Use Beak Flow for brain dump and calendar drag; use `t` for quick capture
+
+## Project structure
+
+```text
+src/          Python package (CLI, API, services, AI)
+ui/           Vue 3 Beak Flow frontend
+tests/        pytest (services + API)
+docs/         Command reference, API, architecture, Beak Flow guide
+```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [docs/README.md](docs/README.md) | Documentation index |
+| [docs/commands.md](docs/commands.md) | Full CLI reference |
+| [docs/beak-flow.md](docs/beak-flow.md) | Web UI workflows |
+| [docs/api.md](docs/api.md) | REST API for Beak Flow |
+| [docs/architecture.md](docs/architecture.md) | Schema and code layout |
+| [docs/features.md](docs/features.md) | Feature list and roadmap |
 
 ## Contributing
 

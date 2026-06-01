@@ -1,0 +1,1 @@
+{"root":["./src/main.ts","./src/vite-env.d.ts","./src/api/client.ts","./src/stores/planner.ts","./src/App.vue","./src/components/AiDrawer.vue","./src/components/BrainDumpPanel.vue","./src/components/CalendarStrip.vue","./src/components/DayView.vue","./src/components/TaskCard.vue","./src/components/TaskDetailModal.vue"],"version":"5.9.3"}

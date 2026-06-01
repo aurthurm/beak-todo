@@ -1,64 +1,160 @@
 # Felicity Todos — Command Reference
 
-## Core commands
+Quick index: [docs/README.md](README.md) · Beak Flow UI: [beak-flow.md](beak-flow.md) · REST API: [api.md](api.md)
 
-See [README](../README.md) for task management, categories, notes, export/import, and stats.
+## Data locations
 
-The database and config live under `~/.todos/` (OS-agnostic):
+All paths use `Path.home() / ".todos"` (Linux, macOS, Windows).
 
 | File | Purpose |
 |------|---------|
 | `todos.db` | SQLite database |
-| `config.toml` | AI and app settings |
+| `config.toml` | AI provider and model settings |
 
-`t init` creates both the database and default config.
+```bash
+t init          # creates DB + default config
+t config path   # print config file path
+```
 
-## Config commands
+## Core CLI commands
+
+| Command | Description | Example |
+|---------|-------------|---------|
+| `t init` | Initialize database and config | `t init` |
+| `t a -m <msg>` | Add todo | `t a -m "Buy groceries"` |
+| `t a -p <0-3>` | Priority | `t a -m "Fix bug" -p 3` |
+| `t a -c <name>` | Category | `t a -c "Work"` |
+| `t a -d <date>` | Due date | `t a -d "2026-06-15"` |
+| `t l` | List todos | `t l` |
+| `t l -t` | Table view | `t l -t` |
+| `t l --overdue` | Overdue only | `t l --overdue` |
+| `t e <id>` | Edit todo | `t e 5 -m "New title" -p 2` |
+| `t done <id>` | Mark complete | `t done 5` |
+| `t undo <id>` | Mark incomplete | `t undo 5` |
+| `t rm <id>` | Delete todo | `t rm 3` |
+| `t search <kw>` | Keyword search | `t search "proposal"` |
+| `t stats` | Statistics | `t stats` |
+| `t export <file>` | CSV export | `t export ~/todos.csv` |
+| `t import <file>` | CSV import | `t import ~/todos.csv` |
+
+### Categories
 
 | Command | Description |
 |---------|-------------|
-| `t config show` | Print effective configuration (JSON) |
-| `t config path` | Print path to `config.toml` |
-| `t config get <key>` | Get value, e.g. `ai.provider` |
-| `t config set <key> <value>` | Set value, e.g. `ai.provider openai` |
-| `t config edit` | Open config in `$EDITOR` |
+| `t ac <name>` | Add category |
+| `t ec <id> <name>` | Rename category |
+| `t lc` | List categories |
+| `t rmc <id>` | Remove category (todos → General) |
 
-## AI commands
+### Notes
 
 | Command | Description |
 |---------|-------------|
-| `t ai setup` | Create `~/.todos/` and default `config.toml` |
-| `t ai doctor` | Show API keys, harness CLIs, resolved provider |
-| `t ai add "<text>"` | Parse natural language → create todo |
-| `t ai add "<text>" --dry-run` | Preview parsed fields only |
-| `t ai add --provider openai "<text>"` | Override provider for one command |
-| `t ai plan [today\|tomorrow\|week]` | Suggested focus plan from open tasks |
-| `t ai summary` | Narrative workload summary |
-| `t ai risks` | Deadline and workload risk bullets |
-| `t ai search "<query>"` | LLM keyword rewrite + SQL search |
-| `t ai breakdown "<task>"` | Create flat subtasks as separate todos |
-| `t ai chat` | Read-only REPL (type `exit` to quit) |
+| `t n <id> <text>` | Add note |
+| `t ln <id>` | List notes |
+
+## Config commands (`t config`)
+
+| Command | Description |
+|---------|-------------|
+| `t config show` | Effective config (JSON) |
+| `t config path` | Path to `config.toml` |
+| `t config get <key>` | e.g. `ai.provider` |
+| `t config set <key> <val>` | e.g. `ai.provider openai` |
+| `t config edit` | Open in `$EDITOR` |
+
+Example `~/.todos/config.toml`:
+
+```toml
+[ai]
+enabled = true
+provider = "auto"
+model = "gpt-4o-mini"
+temperature = 0.2
+show_provider_on_use = true
+
+[harness]
+codex_bin = "codex"
+claude_bin = "claude"
+timeout_seconds = 120
+```
+
+## AI commands (`t ai`)
+
+Setup:
+
+```bash
+t ai setup
+t ai doctor
+```
+
+| Command | Description |
+|---------|-------------|
+| `t ai add "<text>"` | Natural language → create todo |
+| `t ai add "<text>" --dry-run` | Preview only |
+| `t ai add --provider openai "<text>"` | Override provider |
+| `t ai plan [today\|tomorrow\|week]` | Suggested plan |
+| `t ai summary` | Workload narrative |
+| `t ai risks` | Risk bullets |
+| `t ai search "<query>"` | Smart search |
+| `t ai breakdown "<task>"` | Flat subtasks |
+| `t ai chat` | Read-only REPL (`exit` to quit) |
 
 ### Provider subcommands
 
 | Command | Description |
 |---------|-------------|
-| `t ai provider list` | Allowed providers and auto resolution |
+| `t ai provider list` | Allowed providers + auto resolution |
 | `t ai provider set <name>` | `auto`, `openai`, `anthropic`, `gemini`, `ollama`, `litellm`, `codex`, `claude`, `none` |
 
-## Environment variables
+### Environment variables
 
-| Variable | Used for |
-|----------|----------|
+| Variable | Purpose |
+|----------|---------|
 | `OPENAI_API_KEY` | OpenAI via LiteLLM |
 | `ANTHROPIC_API_KEY` | Anthropic via LiteLLM |
 | `GOOGLE_API_KEY` / `GEMINI_API_KEY` | Gemini via LiteLLM |
-| `OLLAMA_API_BASE` | Local OpenAI-compatible server |
+| `OLLAMA_API_BASE` | Local models |
 
-## Architecture
+### Provider resolution (`provider = auto`)
 
-- **Direct mode:** `LiteLLMProvider` — default for structured JSON (`ParsedTask`, `PlanResponse`, etc.)
-- **Harness mode:** subprocess to `codex` or `claude` — only when explicitly configured
-- **Resolver:** `src/ai/resolver.py` — env + config + `--provider` override
+1. CLI `--provider` override  
+2. Fixed value in config (not `auto`)  
+3. `OPENAI_API_KEY`  
+4. `ANTHROPIC_API_KEY`  
+5. `GOOGLE_API_KEY` / `GEMINI_API_KEY`  
+6. `OLLAMA_API_BASE`  
+7. Harness **only** if config explicitly `codex` or `claude`  
 
-Todo commands never call LiteLLM directly; they use `complete_json()` on the resolved `AIProvider`.
+Harness is **never** auto-selected when API keys exist.
+
+## Beak Flow (web UI)
+
+| Command | Description |
+|---------|-------------|
+| `beak-flow` | Start API server (port 8787) |
+
+UI development:
+
+```bash
+cd ui && npm install && npm run dev
+```
+
+See [beak-flow.md](beak-flow.md).
+
+## Priority levels
+
+| Value | Label | Color |
+|-------|-------|-------|
+| 0 | Low | Blue |
+| 1 | Medium | Yellow |
+| 2 | High | Orange |
+| 3 | Critical | Red |
+
+## Architecture notes
+
+- Service layer: `src/services/`  
+- AI providers: `src/ai/` (LiteLLM + optional harness)  
+- CLI must not duplicate SQL — use services  
+
+Details: [architecture.md](architecture.md).

@@ -1,0 +1,113 @@
+"""API request/response models."""
+
+from __future__ import annotations
+
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+from src.ai.schemas import (
+    ActionPreviewResponse,
+    BrainDumpResponse,
+    ChatResponse,
+    ParsedTask,
+    PlanResponse,
+    TodoPatchProposal,
+)
+
+
+class TodoOut(BaseModel):
+    id: int
+    message: str
+    priority: int
+    priority_label: str
+    priority_color: str
+    category: str
+    completed: bool
+    due_date: Optional[str] = None
+    sort_order: int = 0
+
+
+class TodoCreate(BaseModel):
+    message: str
+    priority: int = 0
+    category: str = "General"
+    due_date: Optional[str] = None
+
+
+class TodoPatch(BaseModel):
+    message: Optional[str] = None
+    priority: Optional[int] = Field(default=None, ge=0, le=3)
+    category: Optional[str] = None
+    due_date: Optional[str] = None
+    clear_due: bool = False
+    completed: Optional[bool] = None
+    sort_order: Optional[int] = None
+
+
+class ReorderItem(BaseModel):
+    id: int
+    sort_order: int
+
+
+class ReorderRequest(BaseModel):
+    items: list[ReorderItem]
+
+
+class NoteOut(BaseModel):
+    id: int
+    todo_id: int
+    content: str
+    created_at: str
+
+
+class NoteCreate(BaseModel):
+    content: str
+
+
+class CategoryOut(BaseModel):
+    id: int
+    name: str
+    todo_count: int
+
+
+class BrainDumpRequest(BaseModel):
+    text: str
+    provider: Optional[str] = None
+
+
+class BrainDumpApplyRequest(BaseModel):
+    tasks: list[ParsedTask]
+
+
+class BrainDumpApplyResponse(BaseModel):
+    ids: list[int]
+
+
+class ChatRequest(BaseModel):
+    message: str
+    provider: Optional[str] = None
+
+
+class PlanRequest(BaseModel):
+    horizon: str = "today"
+    provider: Optional[str] = None
+
+
+class ActionPreviewRequest(BaseModel):
+    request: str
+    provider: Optional[str] = None
+
+
+class ActionApplyRequest(BaseModel):
+    patches: list[TodoPatchProposal]
+
+
+class ActionApplyResponse(BaseModel):
+    applied: int
+
+
+class HealthResponse(BaseModel):
+    status: str
+    ai_enabled: bool
+    config_path: str

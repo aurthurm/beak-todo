@@ -1,92 +1,72 @@
-# Product Requirements Document: Felicity Todos CLI
+# Features Overview
 
-I'll create a comprehensive PRD for a command-line todo application powered by Typer, which will be accessible via the `t` command. Let me outline the key requirements, implementation details, and additional features.
+Felicity Todos is a local-first task manager with a terminal CLI, optional AI, and the **Beak Flow** web planning gateway.
 
-## Overview
+## Implemented
 
-Felicity Todos is a command-line todo application that allows users to easily manage tasks, categorize them, set priorities, and keep track of their progress. The application will be built using Python with Typer for the CLI interface and SQLite for data storage.
+### Task management (CLI + API + UI)
 
-## Core Requirements
+- Add, edit, delete todos
+- Priorities 0–3 with color coding
+- Categories (create, rename, delete, filter)
+- Due dates and overdue detection
+- Completion status
+- Notes per task
+- Keyword search
+- CSV export/import
+- Statistics (`t stats`)
+- Within-day `sort_order` (UI/API)
 
-1. **Installation**
-   - Package name: `felicity-todos`
-   - Command: `t`
-   - Installation method: `pip install felicity-todos`
+### Terminal CLI (`t`)
 
-2. **Data Storage**
-   - SQLite database stored at `~/.todos/todos.db`
-   - Database should be created automatically if it doesn't exist
+- Short mnemonic commands (`t a`, `t l`, `t e`, …)
+- Rich table and colored list views
+- Auto-create database on first command (`ensure_db`)
 
-3. **Task Management**
-   - Add tasks with priority and category
-   - Edit task details
-   - Delete tasks
-   - Mark tasks as complete/incomplete
+### AI (CLI + API)
 
-4. **Categorization**
-   - Assign tasks to categories
-   - Add, edit, and delete categories
-   - List tasks by category
+- Natural language task creation (`t ai add`)
+- Brain dump batch parse (UI + `/api/ai/brain-dump`)
+- Daily planning (`t ai plan`, UI **AI Plan**)
+- Summary, risks, smart search, breakdown, chat
+- Dual-mode providers: LiteLLM (default) + opt-in Codex/Claude harness
+- Config file: `~/.todos/config.toml`
+- `t ai setup`, `t ai doctor`, `t config`
 
-5. **Priority System**
-   - 4 priority levels:
-     - 0: Low (Blue)
-     - 1: Medium (Yellow)
-     - 2: High (Orange)
-     - 3: Critical (Red)
-   - Filter tasks by priority
+### Beak Flow (web UI)
 
-6. **Commands**
-   - `t a -p <priority> -m <message>` - Add task
-   - `t a -c <name>` - Add category
-   - `t e <id> <message>` - Edit task description
-   - `t e -c <id> <name>` - Edit category name
-   - `t l` - List all tasks
-   - `t l -p <priority>` - List tasks by priority
-   - `t l -c <category>` - List tasks by category
-   - `t l -p <priority> -c <category>` - List tasks by priority and category
+- Three-panel desktop layout: brain dump, calendar strip, day view
+- Drag-and-drop: inbox ↔ days ↔ done
+- AI Organise with preview and selective add
+- AI drawer with preview/apply for mutations
+- Task detail modal with notes
+- Mobile tab layout
+- Shares `~/.todos/todos.db` with CLI
 
-## Additional Features
+## Planned / not in v1
 
-1. **Due Dates**
-   - Add due dates to tasks
-   - `t a -p <priority> -m <message> -d <due_date>`
-   - List tasks by due date
-   - `t l -d` - List tasks sorted by due date
-   - Show overdue tasks in a distinct color
+- Interactive CLI mode (`t interactive`) — mentioned in early PRD only
+- Subtasks / `parent_id`
+- Recurring tasks
+- Multi-user / auth
+- Push notifications
+- External calendar sync
+- PostgreSQL backend
 
-2. **Completion Status**
-   - Mark tasks as complete/incomplete
-   - `t done <id>` - Mark task as complete
-   - `t undo <id>` - Mark task as incomplete
-   - List completed/incomplete tasks
-   - `t l --done` - List completed tasks
-   - `t l --undone` - List incomplete tasks
+## User personas
 
-3. **Task Notes**
-   - Add additional notes to tasks
-   - `t n <id> <note>` - Add note to task
-   - `t ln <id>` - List notes for a task
+| Persona | Primary tool |
+|---------|----------------|
+| Power user | `t` CLI, scripting, quick capture |
+| Planner | Beak Flow UI, calendar drag, brain dump |
+| Both | Same data; CLI for speed, UI for planning |
 
-4. **Export/Import**
-   - Export tasks to CSV
-   - `t export <filename>` - Export tasks to CSV
-   - Import tasks from CSV
-   - `t import <filename>` - Import tasks from CSV
+## Documentation map
 
-5. **Statistics**
-   - Show statistics about tasks
-   - `t stats` - Show statistics about tasks (count by priority, category, completion status)
-
-6. **Task Search**
-   - Search tasks by keyword
-   - `t search <keyword>` - Search tasks by keyword
-
-7. **Interactive Mode**
-   - Interactive task management
-   - `t interactive` - Enter interactive mode
-
-8. **Configuration**
-   - Customize colors and default settings
-   - `t config` - Configure settings
-
+| Doc | Content |
+|-----|---------|
+| [README.md](README.md) | Doc index |
+| [commands.md](commands.md) | CLI reference |
+| [beak-flow.md](beak-flow.md) | Web UI guide |
+| [api.md](api.md) | REST API |
+| [architecture.md](architecture.md) | Code and schema |
